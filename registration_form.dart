@@ -28,21 +28,19 @@ class RegistrationForm extends StatelessWidget {
               height: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 50),
               child: SingleChildScrollView(
-                child: Column (children: [
+                child: Column (
+                  children: [
                   SizedBox(height: 20),
-                  SizedBox(
-                    child: Row(
-                      children: [
-                        Icon(Icons.account_circle),
-                        Text('Регистрация',
-                            style: Theme.of(context).textTheme.headline6),
-                      ],
-                    ),
+                  ListTile(
+                    leading: Icon(Icons.account_circle),
+                    title: Text('Регистрация',
+                        style: Theme.of(context).textTheme.headline6),
                   ),
                   const Divider(
                   ),
                   SizedBox(height: 20),
-                  Text('Чтобы зарегистрироваться, введите свой номер телефона и почту'),
+                  Text('Чтобы зарегистрироваться, введите свой номер телефона и почту',
+                      textAlign: TextAlign.center),
                   SizedBox(height: 14),
                   Text('Телефон',),
                   TextField(
@@ -68,9 +66,11 @@ class RegistrationForm extends StatelessWidget {
                   ),
                   SizedBox(height: 28),
                   Text("Вам придет четырехзначный код,который будет вашим паролем",
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyText1),
                   SizedBox(height: 10),
-                  Text("Чтобы зарегистрироваться введите свой номер телефона и почту"),
+                  Text("Чтобы зарегистрироваться введите свой номер телефона и почту",
+                      textAlign: TextAlign.center),
                   SizedBox(height: 10),
                   SizedBox(height: 60, width: 150,
                       child: ElevatedButton(onPressed: (){}, child: Text ('Войти'),
