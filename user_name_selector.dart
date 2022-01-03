@@ -34,6 +34,7 @@ class _SimpleListSelectorState extends State<SimpleListSelector> {
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.all(8),
+      itemCount: users.length,
       itemBuilder: (BuildContext context, int index) {
         return ListTile (
             title: Text(users[index].name),
