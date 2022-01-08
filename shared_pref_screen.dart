@@ -164,7 +164,5 @@ class _FlutterDemoState extends State<FlutterDemo> {
     )
     )))],
         );
-    return FlutterDemo(storage: CounterStorage(),
-    );
   }
 }

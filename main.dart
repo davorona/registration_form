@@ -9,6 +9,8 @@ import 'package:demotext/switches_demo_screen.dart';
 import 'package:demotext/user_name_selector.dart';
 import 'package:flutter/material.dart';
 
+import 'network_screen.dart';
+
 void main() {
-  runApp(const SharedPref());
+  runApp(const Network());
 }
