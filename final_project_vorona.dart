@@ -13,6 +13,7 @@ class FinalProject extends StatefulWidget {
   _FinalProjectState createState() => _FinalProjectState();
 }
 
+
 class _FinalProjectState extends State<FinalProject> {
   @override
   Widget build(BuildContext context) {
@@ -74,7 +75,6 @@ Widget navDrawer(context) => Drawer(
           leading: const Icon(Icons.cancel),
           title: const Text("Корзина"),
           onTap: (){
-            Navigator.pushNamed(context, '/trash');
           },
         )
       ]),
@@ -224,6 +224,28 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
+Future<PostWithTodoList> _fetchPostById(String id) async {
+  final response = await http.get
+    (Uri.parse("https://jsonplaceholder.typicode.com/users/" + id));
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> body = json.decode(response.body);
+    final post = Post.fromJson(body);
+    final todosResponse = await http.get
+      (Uri.parse("https://jsonplaceholder.typicode.com/todos?userId=" + id));
+
+    List todosJson = json.decode(todosResponse.body);
+    final todos = todosJson.map((item) => TodoItem.fromJson(item)).toList();
+
+    return PostWithTodoList(
+      post: post,
+      todos: todos
+    );
+  } else {
+    throw Exception('Failed to load user from API');
+  }
+}
+
 Future<List<Post>> _fetchPostList() async {
   final response = await http.get
     (Uri.parse("https://jsonplaceholder.typicode.com/users"));
@@ -240,22 +262,27 @@ ListView _usersListView(data) {
       itemCount: data.length,
       itemBuilder: (context, index) {
 
-        return _userListTile(data[index].id.toString(),data[index].name,
+        return _userListTile(context, data[index].id.toString(),data[index].name,
             data[index].email);
       });
 }
 
-ListTile _userListTile(String title, String subtitle, String trailing) =>
+ListTile _userListTile(BuildContext context, String id, String subtitle, String trailing) =>
     ListTile(
 
 
-  leading: Text(title,
+  leading: Text(id,
       style: TextStyle(
         fontWeight: FontWeight.w500,
         fontSize: 20,)),
   title: Text(subtitle),
   subtitle: Text(trailing),
-  onTap: (){},
+
+  onTap: (){
+    Navigator.pushNamed(context, '/trash', arguments: <String, String>{
+      'id': id
+    });
+  },
 );
 
 class SecondScreen extends StatefulWidget {
@@ -319,15 +346,23 @@ ListView _usersListView2(data) {
   return ListView.builder(
       itemCount: data.length,
       itemBuilder: (context, index) {
+        final post = data[index].post;
+        final todos = data[index].todos;
+        bool _checked = false;
 
-        return _userListTile2(data[index].id.toString()+"\n",
-            "Имя: "+ data[index].name+"\n"+
-                "Улица: "+data[index].address.street+"\n"+
-                "Серия: "+data[index].address.suite+"\n"+
-                "Город: "+data[index].address.city+"\n"+
-                "Индекс: "+data[index].address.zipcode+"\n"+
-                "Телефон: "+data[index].phone,
-                "Комапния: "+data[index].company.name);
+
+
+        return _userListTile2(post.id.toString()+"\n",
+            "Имя: "+ post.name+"\n"+
+                "Улица: "+post.address.street+"\n"+
+                "Серия: "+post.address.suite+"\n"+
+                "Город: "+post.address.city+"\n"+
+                "Индекс: "+post.address.zipcode+"\n"+
+                "Телефон: "+post.phone +"\n"+
+                "Компания: "+post.company.name+"\n",
+                "TODOS: " + todos.length.toString() +"\n" +
+                     todos[1].completed.toString());
+
       });
 }
 
@@ -341,7 +376,9 @@ ListTile _userListTile2(String title, String subtitle, String trailing) =>
       title: Text(subtitle),
       subtitle: Text(trailing,
       style: TextStyle(decorationColor: Colors.red),),
-      onTap: (){},
+      onTap: (){
+
+      },
     );
 
 class ThirdScreen extends StatefulWidget {
@@ -352,17 +389,24 @@ class ThirdScreen extends StatefulWidget {
 }
 
 class _ThirdScreenState extends State<ThirdScreen> {
-  late Future<List<Post>> futurePostList;
-  late List<Post> usersPostData;
+  late Future<PostWithTodoList> futurePost;
+  late PostWithTodoList postData;
 
   @override
   void initState() {
     super.initState();
-    futurePostList = _fetchPostList();
   }
+
 
   @override
   Widget build(BuildContext context) {
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map;
+    if (arguments != null) {
+      final id = arguments['id'];
+      futurePost = _fetchPostById(id.toString());
+    }
+
+
     final ButtonStyle buttonStyle =
     TextButton.styleFrom(primary: Theme
         .of(context)
@@ -382,13 +426,15 @@ class _ThirdScreenState extends State<ThirdScreen> {
             width: double.infinity,
             height: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 50),
-            child: FutureBuilder<List<Post>>(
-                future: futurePostList,
+            child: FutureBuilder<PostWithTodoList>(
+                future: futurePost,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    usersPostData = snapshot.data!;
+                    postData = snapshot.data!;
 
-                    return _usersListView2(usersPostData);
+                    final list =  [ postData ];
+
+                    return _usersListView2(list);
 
                   } else if (snapshot.hasError) {
                     return Text('${snapshot.error}');
